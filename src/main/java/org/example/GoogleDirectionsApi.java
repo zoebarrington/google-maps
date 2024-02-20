@@ -18,7 +18,7 @@ public class GoogleDirectionsApi {
         try {
             // API URL
             String apiUrl = "https://maps.googleapis.com/maps/api/directions/json?destination=" + endLocation + "&mode=transit&origin=" + startLocation + "&key=" + API_KEY;
-
+            System.out.println("url is : " + apiUrl);
             URL url = new URL(apiUrl);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
@@ -61,8 +61,6 @@ public class GoogleDirectionsApi {
         JsonNode legsArray = root.get(0);
         JsonNode durationObject = legsArray.get("duration");
         String durationValue = durationObject.get("text").toString();
-
-
         return "The journey is going to take " + durationValue;
     }
 
