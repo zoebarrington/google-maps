@@ -9,91 +9,85 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.stream.Collectors;
 
 public class GoogleDirectionsApi {
     private static final String API_KEY = "AIzaSyB6qZetW1t_tGagT-jN-zTQK_c4OLwnX8M";
 
     public void getGoogleDirections(String startLocation, String endLocation) {
         try {
-            // API URL
-            String apiUrl = "https://maps.googleapis.com/maps/api/directions/json?destination=" + endLocation + "&mode=transit&origin=" + startLocation + "&key=" + API_KEY;
-            System.out.println("url is : " + apiUrl);
-            URL url = new URL(apiUrl);
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod("GET");
-            int responseCode = connection.getResponseCode();
+            String apiUrl = buildDirectionsApiUrl(startLocation, endLocation);
+            System.out.println("URL: " + apiUrl);
 
-            if (responseCode == HttpURLConnection.HTTP_OK) {
-                // Create BufferedReader to read the response
-                BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-                String inputLine;
-                StringBuffer response = new StringBuffer();
+            String response = sendGetRequest(apiUrl);
 
-                while ((inputLine = in.readLine()) != null) {
-                    response.append(inputLine);
-                }
-                in.close();
+            String duration = getDuration(response);
+            System.out.println(duration);
 
-                //get the duration
+            String distance = getDistance(response);
+            System.out.println("Distance: " + distance);
 
-                String duration = getDuration(response.toString());
+            double[] startLocationCoordinates = getCoordinates(response, "start");
+            double[] endLocationCoordinates = getCoordinates(response, "end");
+            double[] midpointCoordinates = calculateMidpoint(startLocationCoordinates, endLocationCoordinates);
+            System.out.println("Midpoint Coordinates: Lat: " + midpointCoordinates[0] + ", Lng: " + midpointCoordinates[1]);
 
-                System.out.println(duration);
-                System.out.println(getDistance(response.toString()));
-                System.out.println("is this working" + getCoordinates(response.toString(), "end"));
-                double[] startLocationCoordinates = getCoordinates(response.toString(), "start");
-                double[] endLocationCoordinates = getCoordinates(response.toString(), "end");
-                double[] midpointCoordinates = calculateMidpoint(startLocationCoordinates, endLocationCoordinates);
-                System.out.println("midpoint lat: " + String.format("%.6f", midpointCoordinates[0]) + " midpoint lng: " + String.format("%.6f", midpointCoordinates[1]));
-
-            } else {
-                System.out.println("Error: " + responseCode);
-            }
-            connection.disconnect();
-        } catch (
-                IOException e) {
+            String midpointAddress = reverseGeocode(midpointCoordinates[0], midpointCoordinates[1]);
+            System.out.println("Midpoint Address: " + midpointAddress);
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    private String buildDirectionsApiUrl(String startLocation, String endLocation) {
+        return "https://maps.googleapis.com/maps/api/directions/json?destination=" +
+                endLocation +
+                "&mode=transit&origin=" +
+                startLocation +
+                "&key=" +
+                API_KEY;
+    }
+
+    private String sendGetRequest(String apiUrl) throws IOException {
+        URL url = new URL(apiUrl);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        connection.setRequestMethod("GET");
+
+        try (BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
+            return in.lines().collect(Collectors.joining());
+        }
+    }
+
     private String getDuration(String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(jsonString);
-        JsonNode root = rootNode.get("routes").get(0).get("legs");
-        JsonNode legsArray = root.get(0);
-        JsonNode durationObject = legsArray.get("duration");
-        String durationValue = durationObject.get("text").toString();
-        return "The journey is going to take " + durationValue;
+        JsonNode rootNode = new ObjectMapper().readTree(jsonString);
+        JsonNode durationNode = rootNode.get("routes").get(0).get("legs").get(0).get("duration");
+        return "The journey is going to take " + durationNode.get("text").asText();
     }
 
     private String getDistance(String jsonString) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(jsonString);
-        JsonNode root = rootNode.get("routes").get(0).get("legs");
-        JsonNode legsArray = root.get(0);
-        JsonNode durationObject = legsArray.get("distance");
-        String durationValue = durationObject.get("text").toString();
-        System.out.println("the distance is "+durationValue);
-        return durationValue;
+        JsonNode rootNode = new ObjectMapper().readTree(jsonString);
+        JsonNode distanceNode = rootNode.get("routes").get(0).get("legs").get(0).get("distance");
+        return distanceNode.get("text").asText();
     }
 
     private double[] getCoordinates(String jsonString, String type) throws JsonProcessingException {
-        ObjectMapper objectMapper = new ObjectMapper();
-        JsonNode rootNode = objectMapper.readTree(jsonString);
-        JsonNode root = rootNode.get("routes").get(0).get("legs");
-        JsonNode legsArray = root.get(0);
-        JsonNode location = legsArray.get(type+"_location");
-        double lat = location.get("lat").asDouble();
-        double lng = location.get("lng").asDouble();
+        JsonNode rootNode = new ObjectMapper().readTree(jsonString);
+        JsonNode locationNode = rootNode.get("routes").get(0).get("legs").get(0).get(type + "_location");
+        double lat = locationNode.get("lat").asDouble();
+        double lng = locationNode.get("lng").asDouble();
         return new double[]{lat, lng};
     }
 
     private double[] calculateMidpoint(double[] startCoordinates, double[] endCoordinates) {
-        //calculate the midpoint
         double midpointLat = (startCoordinates[0] + endCoordinates[0]) / 2;
-        System.out.println(midpointLat + " midpoint lat");
         double midpointLng = (startCoordinates[1] + endCoordinates[1]) / 2;
-        System.out.println(midpointLng + " midpoint lat");
         return new double[]{midpointLat, midpointLng};
+    }
+
+    private String reverseGeocode(double latitude, double longitude) throws IOException {
+        String apiUrl = "https://maps.googleapis.com/maps/api/geocode/json?latlng=" + latitude + "," + longitude + "&key=" + API_KEY;
+        String response = sendGetRequest(apiUrl);
+        JsonNode jsonNode = new ObjectMapper().readTree(response);
+        return jsonNode.get("results").get(0).get("formatted_address").asText();
     }
 }
