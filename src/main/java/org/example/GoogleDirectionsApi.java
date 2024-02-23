@@ -3,7 +3,6 @@ package org.example;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.sun.org.apache.xpath.internal.objects.XNumber;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -41,8 +40,11 @@ public class GoogleDirectionsApi {
 
                 System.out.println(duration);
                 System.out.println(getDistance(response.toString()));
-                System.out.println(calculateMidWayPointInDistance(getDistance(response.toString())));
-
+                System.out.println("is this working" + getCoordinates(response.toString(), "end"));
+                double[] startLocationCoordinates = getCoordinates(response.toString(), "start");
+                double[] endLocationCoordinates = getCoordinates(response.toString(), "end");
+                double[] midpointCoordinates = calculateMidpoint(startLocationCoordinates, endLocationCoordinates);
+                System.out.println("midpoint lat: " + String.format("%.6f", midpointCoordinates[0]) + " midpoint lng: " + String.format("%.6f", midpointCoordinates[1]));
 
             } else {
                 System.out.println("Error: " + responseCode);
@@ -75,10 +77,23 @@ public class GoogleDirectionsApi {
         return durationValue;
     }
 
-    private int calculateMidWayPointInDistance(String fullDurationValue) {
-        // Remove any non-numeric characters from the string
-        String numericString = fullDurationValue.replaceAll("[^\\d.]", "");
-        double distanceDouble = Double.parseDouble(numericString);
-        return (int) distanceDouble / 2;
+    private double[] getCoordinates(String jsonString, String type) throws JsonProcessingException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        JsonNode rootNode = objectMapper.readTree(jsonString);
+        JsonNode root = rootNode.get("routes").get(0).get("legs");
+        JsonNode legsArray = root.get(0);
+        JsonNode location = legsArray.get(type+"_location");
+        double lat = location.get("lat").asDouble();
+        double lng = location.get("lng").asDouble();
+        return new double[]{lat, lng};
+    }
+
+    private double[] calculateMidpoint(double[] startCoordinates, double[] endCoordinates) {
+        //calculate the midpoint
+        double midpointLat = (startCoordinates[0] + endCoordinates[0]) / 2;
+        System.out.println(midpointLat + " midpoint lat");
+        double midpointLng = (startCoordinates[1] + endCoordinates[1]) / 2;
+        System.out.println(midpointLng + " midpoint lat");
+        return new double[]{midpointLat, midpointLng};
     }
 }
