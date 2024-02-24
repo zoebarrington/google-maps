@@ -11,10 +11,12 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.stream.Collectors;
 
-public class GoogleDirectionsApi {
+public class MidpointCalculator {
     private static final String API_KEY = "AIzaSyB6qZetW1t_tGagT-jN-zTQK_c4OLwnX8M";
 
-    public void getGoogleDirections(String startLocation, String endLocation) {
+    public double[] getGoogleDirections(String startLocation, String endLocation) {
+        //TODO: tidy this up -> add to constructor?
+        double[] midpointCoordinates = new double[0];
         try {
             String apiUrl = buildDirectionsApiUrl(startLocation, endLocation);
             System.out.println("URL: " + apiUrl);
@@ -29,14 +31,17 @@ public class GoogleDirectionsApi {
 
             double[] startLocationCoordinates = getCoordinates(response, "start");
             double[] endLocationCoordinates = getCoordinates(response, "end");
-            double[] midpointCoordinates = calculateMidpoint(startLocationCoordinates, endLocationCoordinates);
+            midpointCoordinates = calculateMidpoint(startLocationCoordinates, endLocationCoordinates);
             System.out.println("Midpoint Coordinates: Lat: " + midpointCoordinates[0] + ", Lng: " + midpointCoordinates[1]);
 
             String midpointAddress = reverseGeocode(midpointCoordinates[0], midpointCoordinates[1]);
             System.out.println("Midpoint Address: " + midpointAddress);
+            return midpointCoordinates;
         } catch (IOException e) {
             e.printStackTrace();
         }
+        //TODO: tidy this up -> error logging
+        return midpointCoordinates;
     }
 
     private String buildDirectionsApiUrl(String startLocation, String endLocation) {
