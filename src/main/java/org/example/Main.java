@@ -7,9 +7,7 @@ public class Main {
     MidpointCalculator midpointCalculator = new MidpointCalculator();
     double[] midpointAddress = midpointCalculator.getGoogleDirections("e35pd", "sw197qu");
 
-
-
-        GooglePlacesSearch googlePlacesSearch = new GooglePlacesSearch();
-        googlePlacesSearch.getGooglePlaces(midpointAddress[0], midpointAddress[1]);
+        RestaurantsSearch restaurantsSearch = new RestaurantsSearch();
+        restaurantsSearch.getGooglePlaces(midpointAddress[0], midpointAddress[1]);
     }
 }
