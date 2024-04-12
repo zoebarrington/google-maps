@@ -1,12 +1,0 @@
-
-d
-java:S1192O"GDefine a constant instead of duplicating this literal "places" 3 times.(Â… 8Š·ú†è1
-s
-java:S2095."QUse try-with-resources or close this "CloseableHttpClient" in a "finally" clause.(âÁê‚ùÿÿÿÿ8Ïêô†è1
-L	java:S106D"+Replace this use of System.out by a logger.(ÔÜÇÆıÿÿÿÿ8Óêô†è1
-]	java:S125E"<This block of commented-out lines of code should be removed.(©Õ•­øÿÿÿÿ8Óêô†è1
-T
-java:S1135Q"2Complete the task associated to this TODO comment.(•†‡üÿÿÿÿ8Â£ƒ‡è1
-G	java:S106S"+Replace this use of System.out by a logger.(ÃÇÑï8®øõ†è1
-L	java:S106W"+Replace this use of System.out by a logger.(º“™ºûÿÿÿÿ8¨·ú†è1
-„secrets:S6334"_Make sure this Google API Key is either secured or revoked, changed, and removed from the code.(ßà«¾ùÿÿÿÿ8…à¼¾å1

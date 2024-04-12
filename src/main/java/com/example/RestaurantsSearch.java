@@ -1,4 +1,4 @@
-package org.example;
+package com.example;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -16,6 +16,7 @@ import java.util.Map;
 
 public class RestaurantsSearch {
     private static final String API_KEY = "AIzaSyB6qZetW1t_tGagT-jN-zTQK_c4OLwnX8M";
+    private static final ObjectMapper objectMapper = new ObjectMapper();
 
     public void getGooglePlaces(double latitude, double longitude) {
         // API endpoint URL
@@ -66,25 +67,27 @@ public class RestaurantsSearch {
 
             // Print response body
             System.out.println("return : " +getListOfNearbyRestaurants(responseBody));
-//            System.out.println(responseBody);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private String getListOfNearbyRestaurants(String jsonString) throws JsonProcessingException {
+    public Map<String, String> getListOfNearbyRestaurants(String jsonString) throws JsonProcessingException {
         Map<String, String> restaurantMap = new HashMap<>();
-        JsonNode rootNode = new ObjectMapper().readTree(jsonString);
-        int size = rootNode.get("places").size();
-        for(int i=0; i < size-1; i++) {
-            //TODO: account for null
-            String restaurantName = rootNode.get("places").get(i).get("displayName").get("text").asText();
-            System.out.println(restaurantName);
-            String websiteUrl = rootNode.get("places").get(i).get("websiteUri").asText();
-            restaurantMap.put(restaurantName, websiteUrl);
+        JsonNode rootNode = objectMapper.readTree(jsonString);
+        JsonNode placesNode = rootNode.get("places");
+        if (placesNode != null && placesNode.isArray()) {
+            for (JsonNode placeNode : placesNode) {
+                JsonNode displayNameNode = placeNode.path("displayName").path("text");
+                JsonNode websiteUriNode = placeNode.path("websiteUri");
+                if (!displayNameNode.isMissingNode() && !websiteUriNode.isMissingNode()) {
+                    String restaurantName = displayNameNode.asText();
+                    String websiteUrl = websiteUriNode.asText();
+                    restaurantMap.put(restaurantName, websiteUrl);
+                }
+            }
         }
-        System.out.println(restaurantMap);
-        return rootNode.asText();
+        return restaurantMap;
     }
 }
