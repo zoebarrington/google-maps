@@ -1,0 +1,7 @@
+
+}
+java:S1488!"`Immediately return this expression instead of assigning it to the temporary variable "midpoint".(ÚÀìâ8ª„Ù—ï1
+L	java:S106"+Replace this use of System.out by a logger.(²ÄÓ«ıÿÿÿÿ8„œ×—ï1
+g
+java:S1117 "ERename "restaurantsSearch" which hides the field declared at line 18.(½Ü §ùÿÿÿÿ8ñØ—ï1
+]	java:S125,"<This block of commented-out lines of code should be removed.(îº§ãûÿÿÿÿ8…œ×—ï1

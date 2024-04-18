@@ -13,3 +13,5 @@ b
 2src/main/java/com/example/GirlBossApplication.java,f/2/f21a8a21127876570cfd28f38cbffa7d0af2a30c
 `
 0src/main/java/com/example/RestaurantsSearch.java,e/7/e78cd7818339d2a2336318a174939ec5b8a60cf1
+i
+9src/main/java/com/example/dto/RestaurantsResponseDto.java,9/9/99ce5c5b32ba6f3f5ff7dad87d40d97e714704af

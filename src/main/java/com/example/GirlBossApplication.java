@@ -1,23 +1,22 @@
 package com.example;
 
-import com.example.controller.AppController;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.context.annotation.Bean;
+import org.springframework.web.client.RestTemplate;
 
 @SpringBootApplication
-@EnableCaching
 public class GirlBossApplication {
+
     public static void main(String[] args) {
-        AppController appController = new AppController();
-        appController.getRestaurants();
         SpringApplication.run(GirlBossApplication.class, args);
-//    MidpointCalculator midpointCalculator = new MidpointCalculator();
-//    double[] midpointAddress = midpointCalculator.getGoogleDirections("e35pd", "sw197qu");
-//    AppController appController = new AppController();
-//        System.out.println(appController.getRestaurants());
-//
-//        RestaurantsSearch restaurantsSearch = new RestaurantsSearch();
-//        restaurantsSearch.getGooglePlaces(midpointAddress[0], midpointAddress[1]);
     }
+
+    @Bean
+    public RestTemplate restTemplate(RestTemplateBuilder builder) {
+        return builder.build();
+    }
+
 }

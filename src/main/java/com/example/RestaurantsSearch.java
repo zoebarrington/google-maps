@@ -10,15 +10,17 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
+import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 public class RestaurantsSearch {
     private static final String API_KEY = "AIzaSyB6qZetW1t_tGagT-jN-zTQK_c4OLwnX8M";
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    public void getGooglePlaces(double latitude, double longitude) {
+    public String getGooglePlaces(double latitude, double longitude) {
         // API endpoint URL
         String url = "https://places.googleapis.com/v1/places:searchNearby";
 
@@ -67,24 +69,30 @@ public class RestaurantsSearch {
 
             // Print response body
             System.out.println("return : " +getListOfNearbyRestaurants(responseBody));
+            return responseBody;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return "not working";
     }
 
     public Map<String, String> getListOfNearbyRestaurants(String jsonString) throws JsonProcessingException {
         Map<String, String> restaurantMap = new HashMap<>();
-        JsonNode rootNode = objectMapper.readTree(jsonString);
-        JsonNode placesNode = rootNode.get("places");
-        if (placesNode != null && placesNode.isArray()) {
-            for (JsonNode placeNode : placesNode) {
-                JsonNode displayNameNode = placeNode.path("displayName").path("text");
-                JsonNode websiteUriNode = placeNode.path("websiteUri");
-                if (!displayNameNode.isMissingNode() && !websiteUriNode.isMissingNode()) {
-                    String restaurantName = displayNameNode.asText();
-                    String websiteUrl = websiteUriNode.asText();
-                    restaurantMap.put(restaurantName, websiteUrl);
+        if (jsonString == null || jsonString.isEmpty()) {
+           throw new IllegalArgumentException("JSON string is null or empty");
+        } else {
+            JsonNode rootNode = objectMapper.readTree(jsonString);
+            JsonNode placesNode = rootNode.get("places");
+            if (placesNode != null && placesNode.isArray()) {
+                for (JsonNode placeNode : placesNode) {
+                    JsonNode displayNameNode = placeNode.path("displayName").path("text");
+                    JsonNode websiteUriNode = placeNode.path("websiteUri");
+                    if (!displayNameNode.isMissingNode() && !websiteUriNode.isMissingNode()) {
+                        String restaurantName = displayNameNode.asText();
+                        String websiteUrl = websiteUriNode.asText();
+                        restaurantMap.put(restaurantName, websiteUrl);
+                    }
                 }
             }
         }
